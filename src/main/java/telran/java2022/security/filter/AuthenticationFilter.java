@@ -31,7 +31,13 @@ public class AuthenticationFilter implements Filter {
                 return;
             }
 
-            String[] credentials =  getCredentialsFromToken(token);
+            String[] credentials = new String[0];
+            try {
+                credentials = getCredentialsFromToken(token);
+            } catch (Exception e) {
+                response.sendError(401, "Invalid Token");
+                return;
+            }
 
             UserAccount userAccount = userAccountRepository.findById(credentials[0]).orElseThrow(() -> new UserNotFoundException());
             if (!userAccount.getPassword().equals(credentials[1])){
@@ -59,6 +65,6 @@ public class AuthenticationFilter implements Filter {
 
     private boolean checkEndPoint(String method, String servletPath) {
 
-        return !  ("POST".equalsIgnoreCase(method) && servletPath.equals("/account/register"));
+        return !  ("POST".equalsIgnoreCase(method) && servletPath.matches("/account/register/?"));
     }
 }
