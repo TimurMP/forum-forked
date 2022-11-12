@@ -28,6 +28,14 @@ public class AuthenticationFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) resp;
 
+        if (ignoreEndpoints(request)){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
+
+
         if (checkEndPoint(request.getMethod(), request.getServletPath())){
             String token = request.getHeader("Authorization");
             if (token == null){
@@ -89,5 +97,16 @@ public class AuthenticationFilter implements Filter {
     private boolean checkEndPoint(String method, String servletPath) {
 
         return !  ("POST".equalsIgnoreCase(method) && servletPath.matches("/account/register/?"));
+    }
+
+    private boolean ignoreEndpoints(HttpServletRequest request){
+        String tagsRegex = "/forum/posts/tags";
+        String periodRegex = "/forum/posts/period";
+        if (request.getServletPath().equals(tagsRegex) || request.getServletPath().equals(periodRegex)){
+            return true;
+
+        }
+        return false;
+
     }
 }
