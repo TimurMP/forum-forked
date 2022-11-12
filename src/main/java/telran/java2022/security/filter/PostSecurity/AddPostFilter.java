@@ -1,4 +1,4 @@
-package telran.java2022.security.filter;
+package telran.java2022.security.filter.PostSecurity;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
@@ -13,9 +13,9 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Order(23)
+@Order(35)
 
-public class UserUpdateFilter implements Filter {
+public class AddPostFilter implements Filter {
     final UserAccountRepository userAccountRepository;
 
 
@@ -24,27 +24,20 @@ public class UserUpdateFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) resp;
 
-        if (!((HttpServletRequest) req).getMethod().equals("PUT")){
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-
         if (checkEndPoint(request.getMethod(), request.getServletPath())){
             String[] path = request.getServletPath().split("/");
             UserAccount userAccount = userAccountRepository.findById(request.getUserPrincipal().getName()).get();
             if (!userAccount.getLogin().equals(path[3])){
                 System.out.println(((HttpServletRequest) req).getMethod());
-                response.sendError(403, "No sufficient privileges");
+                response.sendError(403, "No sufficient privileges, cannot add post");
                 return;
             }
         }
-//        System.out.println("Works");
         filterChain.doFilter(request, response);
 
     }
 
     private boolean checkEndPoint(String method, String servletPath) {
-        return servletPath.matches("/account/user/\\w+/?");
+        return servletPath.matches("/forum/post/\\w+/?");
     }
 }
