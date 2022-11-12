@@ -29,13 +29,11 @@ public class UserDeletionFilter implements Filter {
             String[] path = request.getServletPath().split("/");
             UserAccount userAccount = userAccountRepository.findById(request.getUserPrincipal().getName()).get();
             if (!userAccount.getLogin().equals(path[3]) && !userAccount.getRoles().contains("Administrator".toUpperCase())  ){
-
-                System.out.println(userAccount.getLogin());
-                for (int i = 0; i < path.length; i++) {
-                    System.out.println(path[i] + " " + i);
-
-                }
-
+//                System.out.println(userAccount.getLogin());
+//                for (int i = 0; i < path.length; i++) {
+//                    System.out.println(path[i] + " " + i);
+//
+//                }
                 response.sendError(403, "No sufficient privileges");
                 return;
             }
