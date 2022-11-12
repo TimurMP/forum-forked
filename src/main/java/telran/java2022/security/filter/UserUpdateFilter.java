@@ -13,9 +13,9 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Order(25)
+@Order(23)
 
-public class UserDeletionFilter implements Filter {
+public class UserUpdateFilter implements Filter {
     final UserAccountRepository userAccountRepository;
 
 
@@ -24,25 +24,22 @@ public class UserDeletionFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) resp;
 
-        if (!((HttpServletRequest) req).getMethod().equals("DELETE")){
+        if (!((HttpServletRequest) req).getMethod().equals("PUT")){
             filterChain.doFilter(request, response);
             return;
         }
 
+
         if (checkEndPoint(request.getMethod(), request.getServletPath())){
             String[] path = request.getServletPath().split("/");
             UserAccount userAccount = userAccountRepository.findById(request.getUserPrincipal().getName()).get();
-            if (!userAccount.getLogin().equals(path[3]) && !userAccount.getRoles().contains("Administrator".toUpperCase())){
-//                System.out.println(userAccount.getLogin());
-//                for (int i = 0; i < path.length; i++) {
-//                    System.out.println(path[i] + " " + i);
-//
-//                }
+            if (!userAccount.getLogin().equals(path[3])){
+                System.out.println(((HttpServletRequest) req).getMethod());
                 response.sendError(403, "No sufficient privileges");
                 return;
             }
         }
-
+        System.out.println("Works");
         filterChain.doFilter(request, response);
 
     }

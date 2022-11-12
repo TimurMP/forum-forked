@@ -49,6 +49,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
 	@Override
 	public UserAccountResponseDto editUser(String login, UserUpdateDto updateDto) {
+		System.out.println("controller");
 		UserAccount userAccount = repository.findById(login).orElseThrow(() -> new UserNotFoundException());
 		if (updateDto.getFirstName() != null) {
 			userAccount.setFirstName(updateDto.getFirstName());
