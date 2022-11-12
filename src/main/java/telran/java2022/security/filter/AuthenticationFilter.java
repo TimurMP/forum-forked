@@ -1,8 +1,10 @@
 package telran.java2022.security.filter;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import telran.java2022.accounting.dao.UserAccountRepository;
+import telran.java2022.accounting.dto.exceptions.UserNotFoundException;
+import telran.java2022.accounting.model.UserAccount;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -10,15 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Base64;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class AuthenticationFilter implements Filter {
     final UserAccountRepository userAccountRepository;
+//    final ModelMapper modelMapper;
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain) throws IOException, ServletException {
-
-
 
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) resp;
@@ -32,6 +33,13 @@ public class AuthenticationFilter implements Filter {
 
             String[] credentials =  getCredentialsFromToken(token);
 
+            UserAccount userAccount = userAccountRepository.findById(credentials[0]).orElseThrow(() -> new UserNotFoundException());
+            if (!userAccount.getPassword().equals(credentials[1])){
+                System.out.println("Password Incorrect");
+                response.sendError(401, "Username or Password is incorrect" );
+                return;
+            }
+//            System.out.println(userAccount.getPassword());
 
         }
 //        System.out.println(request.getHeader("Authorization"));
