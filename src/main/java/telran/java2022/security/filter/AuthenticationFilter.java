@@ -1,19 +1,23 @@
 package telran.java2022.security.filter;
 
 import lombok.RequiredArgsConstructor;
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import telran.java2022.accounting.dao.UserAccountRepository;
-import telran.java2022.accounting.dto.exceptions.UserNotFoundException;
 import telran.java2022.accounting.model.UserAccount;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
+@Order(10)
 public class AuthenticationFilter implements Filter {
     final UserAccountRepository userAccountRepository;
 //    final ModelMapper modelMapper;
@@ -39,12 +43,15 @@ public class AuthenticationFilter implements Filter {
                 return;
             }
 
-            UserAccount userAccount = userAccountRepository.findById(credentials[0]).orElseThrow(() -> new UserNotFoundException());
-            if (!userAccount.getPassword().equals(credentials[1])){
+            UserAccount userAccount = userAccountRepository.findById(credentials[0]).orElse(null);
+            if (userAccount == null || !BCrypt.checkpw(credentials[1],userAccount.getPassword())){
                 System.out.println("Password Incorrect");
                 response.sendError(401, "Username or Password is incorrect" );
                 return;
             }
+
+            request = new WrappedRequest(request, userAccount.getLogin());
+
 //            System.out.println(userAccount.getPassword());
 
         }
@@ -55,6 +62,22 @@ public class AuthenticationFilter implements Filter {
 
 
     }
+
+    private class WrappedRequest extends HttpServletRequestWrapper{
+
+        String login;
+
+        public WrappedRequest(HttpServletRequest request, String login) {
+            super(request);
+            this.login = login;
+        }
+
+        @Override
+        public Principal getUserPrincipal(){
+            return () -> login;
+        }
+    }
+
 
     private String[] getCredentialsFromToken(String token) {
         String[] basicAuth = token.split(" ");
